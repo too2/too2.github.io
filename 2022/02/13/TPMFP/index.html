@@ -81,12 +81,12 @@
 
 
 
-<meta name="description" content="Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013 本文定义了一个基于时间段的最频繁路径查询，即： 用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$ 本文主要工作：1、热门度定义 2、高效搜索$(TPMFP)$ 热门度定义如何很好的对热门度进行量化呢？ 1、首">
+<meta name="description" content="title: 热门路径论文总结date: 2022-02-10 20:05:07tags: 论文笔记mathjax: true Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013 本文定义了一个基于时间段的最频繁路径查询，即： 用户给定一个时间段，起点和终点，返回一个最热门的路线$">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Hexo">
 <meta property="og:url" content="https://too2.github.io/2022/02/13/TPMFP/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013 本文定义了一个基于时间段的最频繁路径查询，即： 用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$ 本文主要工作：1、热门度定义 2、高效搜索$(TPMFP)$ 热门度定义如何很好的对热门度进行量化呢？ 1、首">
+<meta property="og:description" content="title: 热门路径论文总结date: 2022-02-10 20:05:07tags: 论文笔记mathjax: true Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013 本文定义了一个基于时间段的最频繁路径查询，即： 用户给定一个时间段，起点和终点，返回一个最热门的路线$">
 <meta property="og:locale">
 <meta property="og:image" content="https://image.biacid.cn/image-20220213140857907.png">
 <meta property="og:image" content="https://image.biacid.cn/image-20220213142010432.png">
@@ -94,7 +94,7 @@
 <meta property="og:image" content="https://image.biacid.cn/image-20220213142654800.png">
 <meta property="og:image" content="https://image.biacid.cn/image-20220213142754398.png">
 <meta property="article:published_time" content="2022-02-13T06:02:17.864Z">
-<meta property="article:modified_time" content="2022-02-13T06:57:31.449Z">
+<meta property="article:modified_time" content="2022-02-13T08:12:50.849Z">
 <meta property="article:author" content="Barton">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://image.biacid.cn/image-20220213140857907.png">
@@ -307,12 +307,13 @@
       
 
       
-        <p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
+        <p>title: 热门路径论文总结<br>date: 2022-02-10 20:05:07<br>tags: 论文笔记<br>mathjax: true</p>
+<p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
 <p>本文定义了一个基于时间段的最频繁路径查询，即：</p>
 <p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p>
 <h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p>
 <p>2、高效搜索$(TPMFP)$</p>
-<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？</p>
+<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？<span id="more"></span></p>
 <p>1、首先简单的统计每条路段上通过的轨迹（轨迹经过终点）数目不能很好地反映一条路线的热门度 原因：考虑图1，从$v_1～v_{12}$的最热门路线，只单纯考虑从起点到终点经过的轨迹数目，那么$v_1-v_2-v_{12}$为最热门路线，但是对于$v_2～v_{12}$来说，最热门路线应当为$v_2-v_3-v_{12}$</p>
 <p>2、 其他的一些方法通过对节点或者边赋予一个权重，通过聚合函数（相加/累积）求得边的频繁度，但是这种方法仍然存在一定的问题，如果是将不同边上的权重进行相加，那么最热门路径会更偏向于路段数更多的路线，对于先前11年的论文（利用转移概率的方法找到最热门的路径）会更倾向于路段数更少的路线。</p>
 <p>因此为了定义一个更合理的热门度，本文定义的热门路线需满足三个条件</p>
@@ -365,7 +366,7 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2022/02/10/testBlog/" rel="next" title="热门路径论文总结">
+              <a href="/2022/02/10/MPR/" rel="next" title="热门路径论文总结">
                 <i class="fa fa-chevron-left"></i> 热门路径论文总结
               </a>
             

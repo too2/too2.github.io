@@ -303,43 +303,20 @@
 
       
         
-          
-            <p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
+          <p>title: 热门路径论文总结<br>date: 2022-02-10 20:05:07<br>tags: 论文笔记<br>mathjax: true</p>
+<p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
 <p>本文定义了一个基于时间段的最频繁路径查询，即：</p>
 <p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p>
 <h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p>
 <p>2、高效搜索$(TPMFP)$</p>
-<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？</p>
-<p>1、首先简单的统计每条路段上通过的轨迹（轨迹经过终点）数目不能很好地反映一条路线的热门度 原因：考虑图1，从$v_1～v_{12}$的最热门路线，只单纯考虑从起点到终点经过的轨迹数目，那么$v_1-v_2-v_{12}$为最热门路线，但是对于$v_2～v_{12}$来说，最热门路线应当为$v_2-v_3-v_{12}$</p>
-<p>2、 其他的一些方法通过对节点或者边赋予一个权重，通过聚合函数（相加/累积）求得边的频繁度，但是这种方法仍然存在一定的问题，如果是将不同边上的权重进行相加，那么最热门路径会更偏向于路段数更多的路线，对于先前11年的论文（利用转移概率的方法找到最热门的路径）会更倾向于路段数更少的路线。</p>
-<p>因此为了定义一个更合理的热门度，本文定义的热门路线需满足三个条件</p>
-<ul>
-<li><p>后缀优先：任何最热门路径的后缀仍然是最热门路径</p>
-</li>
-<li><p>长度敏感：长度不敏感，$MFP$不偏向于更短或者更长的路径</p>
-</li>
-<li><p>没有瓶颈：不包含任何不频繁的边</p>
-</li>
-</ul>
-<h3 id="高效搜索TPMFP"><a href="#高效搜索TPMFP" class="headerlink" title="高效搜索TPMFP"></a>高效搜索TPMFP</h3><p>同时由于历史轨迹数据非常庞大，并且本文是用户指定时间段，因为不可能将所有时间段的TPMFP结果都计算保存起来，所以在线计算的开销是不可避免的，为了使得TPMFP的查询更加高效，本文设计了特殊的索引结构（减少了从磁盘中获取的轨迹数量）。</p>
-<p>本文的基本想法是通过序列值代替之前的标量值来去表示一条路线。首先给的终点和时间段，首先构造了一个带权重的路网子图$(footmark)$，在$footmark$中，每条边的权重被定义为经过这条边的轨迹（轨迹经过终点呢）数目。</p>
-<p>$TPMFP$算法总流程：</p>
-<p><img src="https://image.biacid.cn/image-20220213140857907.png" alt="image-20220213140857907" style="zoom:50%;" /></p>
-<p>为了构造$footmark$图，首先需要将每条轨迹从磁盘中读出，之后判断其是否能形成$footmark$图，这样时间复杂度就为$O(|\widetilde Υ| \times l)$，即$footmark$的个数乘上$footmarks$的平均长度。</p>
-<p>为了减少$I/O$磁盘消耗，本文设计了$FMI$高效的过滤掉了那些不包含$footmarks$的轨迹（用索引进行查询优化），进一步的通过获取支配轨迹来减少随机页的访问。</p>
-<p><img src="https://image.biacid.cn/image-20220213142010432.png" alt="image-20220213142010432" style="zoom:50%;" /></p>
-<p><img src="https://image.biacid.cn/image-20220213142321631.png" alt="image-20220213142321631" style="zoom:50%;" /></p>
-<p>对于FMI，首先针对$footmarks$图上的每一个节点$v_i$构造了一棵B+树，B+树的每一个叶子结点的格式为$<tid, t_a>$，$tid$代表轨迹的$id$，$t_a$代表轨迹到达$v_i$的时间。通过构建$FMI$，可将搜索$(v_d, T)$的时间缩短至$O(log(|Υ_{v_d}|+|Υ_({v_d,_T})|))$。这时算法瓶颈就出现在将轨迹从磁盘中读出的时间开销（代码中的第四行），会导致$|Υ_({v_d,_T})|$的页面访问，为了进一步去除这种随机读写，开发了$CFMI$的索引结构，这里首先定义了支配轨迹的概念，即轨迹集合中没有任何轨迹能够包含该轨迹（除该轨迹本身），考虑到支配轨迹包含了其余的轨迹，那么只需要记录支配轨迹，并记录下被支配轨迹在支配轨迹的起始位置，这样就不用再去访问其他轨迹了。</p>
-<p><img src="https://image.biacid.cn/image-20220213142654800.png" alt="image-20220213142654800" style="zoom:50%;" /></p>
-<p><img src="https://image.biacid.cn/image-20220213142754398.png" alt="image-20220213142754398" style="zoom:50%;" /></p>
-<p>这里使用支配轨迹主要有两个原因，第一个原因是支配轨迹的数量远远小于所有的轨迹数量，如果我们能够只去访问支配轨迹就能有效的减少页面随机访问的次数；第二，本文设定的时间段T，一般远大于轨迹从起点到终点的时间，这意味着大多数轨迹的开始时间都在时间段$T$内（这段话不是很懂）。$CFMI$改进了在FMI中的索引结构，B+树中叶子结点的关键字格式变为$<tid,t_s,t_a,did,sloc>$，分别代表轨迹$id$，轨迹开始时间，轨迹到终点的时间，支配该轨迹的轨迹$id$和在被支配轨迹$id$中的位置。</p>
-<p>最后，由于$footmarks$上路线序列非递减的特性，可使用$dp$快速找到$TPMFP$。在线规划部分使用类似$bell-fold$的方法找到$TPMFP$。</p>
-<p>可以借鉴的地方：</p>
-<p>可以借鉴其设计$CFMI$索引结构获取轨迹数据来减少磁盘$I/O$开销的问题</p>
-<p>疑问：</p>
-<p>这里热门路线定义为什么是非单调递减？任何最热门路径的后缀仍然是最热门路径？</p>
-
-          
+<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2022/02/13/TPMFP/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -386,7 +363,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/10/testBlog/">
+    <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/10/MPR/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="">
@@ -405,7 +382,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2022/02/10/testBlog/" itemprop="url">热门路径论文总结</a></h1>
+                <a class="post-title-link" href="/2022/02/10/MPR/" itemprop="url">热门路径论文总结</a></h1>
         
 
         <div class="post-meta">
@@ -456,42 +433,16 @@
 
       
         
-          
-            <h3 id="Discovering-Popular-Routes-from-Trajectories"><a href="#Discovering-Popular-Routes-from-Trajectories" class="headerlink" title="Discovering Popular Routes from Trajectories"></a>Discovering Popular Routes from Trajectories</h3><p>与先前工作区别：先前工作专注于局部的物体的运动模式，有助于帮助司机决定是否在某个路口转向，但是并没有解决给定终点发现一条热门路径的问题。比如说$A-C-D$被发现是经常访问的路段，但是人们从$A-C-D$出发却不一定会到达我们想要的$B$，可能从$A-C-E-F$走的可能性更大，所以只去统计每个路段上经过的轨迹数量并不能获得我们想要的结果</p>
+          <h3 id="Discovering-Popular-Routes-from-Trajectories"><a href="#Discovering-Popular-Routes-from-Trajectories" class="headerlink" title="Discovering Popular Routes from Trajectories"></a>Discovering Popular Routes from Trajectories</h3><p>与先前工作区别：先前工作专注于局部的物体的运动模式，有助于帮助司机决定是否在某个路口转向，但是并没有解决给定终点发现一条热门路径的问题。比如说$A-C-D$被发现是经常访问的路段，但是人们从$A-C-D$出发却不一定会到达我们想要的$B$，可能从$A-C-E-F$走的可能性更大，所以只去统计每个路段上经过的轨迹数量并不能获得我们想要的结果</p>
 <p>本文思想：利用原始的轨迹数据生成转移网络，来表示位置之间的移动行为，最后利用转移网络来找到热门路径。转移网络中的每个节点（也就是每个路口）被看作是转移节点，利用历史轨迹数据获得每个转移节点到其余节点到转移概率，热门路径的热门度就被定义为这条路径上所有转移节点的转移概率的乘积。</p>
-<p>具体步骤：对于转移边，其定义为，对于任意的两个转移节点，如果有轨迹经过并且两个转移节点之间没有其他的转移节点经过</p>
-<p>1、通过共现拓展算法挖掘出转移网络（我们这里并没有采用它的方法，使用了路网数据）</p>
-<p>2、通过吸收马尔可夫链获得每个转移节点的转移概率</p>
-<p><img src="https://image.biacid.cn/image-20220211032726556-20220211154339069-20220211154558660.png" alt="image-20220211032726556" style="zoom: 50%;" /></p>
-<p><img src="https://image.biacid.cn/image-20220211032832042-20220211154705152.png" alt="image-20220211032832042" style="zoom:50%;" /></p>
-<p>这里一个节点到下一个节点到转移概率不是两个节点之间的轨迹数除以$n_i$所有的出边上经过的轨迹数，这里考虑了终点的影响，改进成了两个节点之间的经过终点d的轨迹函数除以$n_i$的所有出边上经过终点d的轨迹函数，这样距离终点越近的转移结点的转移概率就会越高。</p>
-<p>此时我们在转移网络上进行随机游走，假设在t步时，我们从起点到达了终点，那么从起点到终点的概率被定义为</p>
-<p><img src="https://image.biacid.cn/image-20220211033131571-20220211154711347.png" alt="image-20220211033131571" style="zoom:50%;" /></p>
-<p>相应的在t步内，从起点到终点的转移概率为</p>
-<p><img src="https://image.biacid.cn/image-20220211033153439-20220211154716470.png" alt="image-20220211033153439" style="zoom:20%;" /></p>
-<p>构造转移矩阵$P$</p>
-<p><img src="https://image.biacid.cn/image-20220211033232372-20220211154721319.png" alt="image-20220211033232372" style="zoom: 33%;" /></p>
-<p>假定这里有x个吸收态，y个传递态，这时矩阵P可以被重新构造成如下形式</p>
-<p><img src="https://image.biacid.cn/image-20220211033319779-20220211154727212.png" alt="image-20220211033319779" style="zoom:25%;" /></p>
-<p><img src="https://image.biacid.cn/image-20220211033345222-20220211154737709.png" alt="image-20220211033345222" style="zoom:25%;" /></p>
-<p>依据转移概率，我们就得到了从起点到终点的转移概率</p>
-<p><img src="https://image.biacid.cn/image-20220211033439554-20220211154743771.png" alt="image-20220211033439554" style="zoom: 50%;" /></p>
-<p>这里假定$n_1, n_2, …, n_l$是转移态，构造转移矩阵</p>
-<p><img src="https://image.biacid.cn/image-20220211033521658-20220211154749301.png" alt="image-20220211033521658" style="zoom:50%;" /></p>
-<p><img src="https://image.biacid.cn/image-20220211033552385-20220211154758689.png" alt="image-20220211033552385" style="zoom:50%;" /></p>
-<p>最后得到提取转移概率的伪码</p>
-<p><img src="https://image.biacid.cn/image-20220211033621507-20220211154805409.png" alt="image-20220211033621507" style="zoom: 50%;" /></p>
-<p>计算上述伪码的时间复杂度</p>
-<p>derive V的时间复杂度$O(t \times N^3)$<br>等式5的时间复杂度：首先遍历邻接矩阵N*N，之后计算prd，首先计算所有经过选中节点的轨迹，计算终点离这些选定轨迹的最短距离之和，假定经过的轨迹数目为K，轨迹上的点为L，那么最短距离之和为KL，最后总的时间复杂度为$O(N(t \times N^3 + LKN^2))$</p>
-<p>3、提出转移概率最大乘积算法找到最热门路径</p>
-<p>类似于dijkstra算法，每次将转移概率最大的节点放到优先队列中去。</p>
-<p><img src="https://image.biacid.cn/image-20220211033729376-20220211154813019.png" alt="image-20220211033729376" style="zoom:50%;" /></p>
-<p>上述伪码时间复杂度$O(|E|+|N|log|N|)$</p>
-<p>疑问：</p>
-<p>1、为什么要计算t次，文中给出的解释是只计算一次只考虑了局部的信息，考虑t次能够考虑全局的信息</p>
-<p>2、发现矩阵快速幂的方法可以优化 224行，矩阵相乘可以用Matlab来优化</p>
-
-          
+<p>具体步骤：对于转移边，其定义为，对于任意的两个转移节点，如果有轨迹经过并且两个转移节点之间没有其他的转移节点经过
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2022/02/10/MPR/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -608,18 +559,14 @@
 
       
         
-          
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-          
+          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2022/02/10/hello-world/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
