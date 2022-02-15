@@ -233,6 +233,282 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/14/TDHP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/02/14/TDHP/" itemprop="url">论文笔记3</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-14T20:05:07+08:00">
+                2022-02-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="本文问题定义"><a href="#本文问题定义" class="headerlink" title="本文问题定义"></a>本文问题定义</h3><p>本文定义问题如下：给定起点、终点，出发时间和一个旅行时间限制，本文的任务是在旅行时间限制内获得一个热门度很高的路线。</p>
+<h3 id="本文主要想法"><a href="#本文主要想法" class="headerlink" title="本文主要想法"></a>本文主要想法</h3><p>发现热门路径是非常重要的，同时热门路径会随着时间变化而发生变化的。先前有关搜索热门路线的工作没有考虑到路线的热门度会随着时间变化而变化（其实13年sigmod论文已经考虑到了时间的影响，用户需要输入一个时间段，通过这个时间段在线构建footmark图，因此在线的时间开销较大，同时时间段设置的很大）</p>
+<h3 id="本文贡献："><a href="#本文贡献：" class="headerlink" title="本文贡献："></a>本文贡献：</h3><ul>
+<li>定义一个TDHP问题去找到具有时间依赖和旅行时间限制的热门路径</li>
+<li>提出了一个构造热门度函数的方法</li>
+<li>提出了一个新的搜索策略去找到TDHP，并使用优化的方法加速这个过程</li>
+<li>实验评估effectiveness and efficiency</li>
+</ul>
+<h3 id="热门度函数定义"><a href="#热门度函数定义" class="headerlink" title="热门度函数定义"></a>热门度函数定义</h3><p>在这篇文章当中，为了减少计算边的热度所带来的开销，提出了一个TimeParti算法将连续热度函数进行离散化。</p>
+<p>时间戳集合：</p>
+<p><img src="https://image.biacid.cn/image-20220214200736892.png" alt="image-20220214200736892" style="zoom:40%;" /></p>
+<p>假定时间被划分为$[t_{k},t_{k+1})|1 \leq k &lt; n$，那么边在该时段的热门度定义如上（这里感觉不太合理，原文说是timestamp set, 但这里$|t_{s_{t_k,t_{k+1}}}|$记录的应该是在$[t_{k},t_{k+1})|$中所有经过的轨迹数量而不是轨迹到达时间t的集合，如果很多轨迹都在同一时刻达到，但是只记录了时间戳，那么热门度就相应的会下降）</p>
+<p>时间区间离散化：rhis</p>
+<p><img src="https://image.biacid.cn/image-20220214202248869.png" alt="image-20220214202248869" style="zoom:40%;" /></p>
+<p>这里采用的方法是二分K-means，设定一个阈值，判断每一个SSE是否会超过阈值，下图为划分示意图（这里若多条轨迹都在时刻t到达，应该认为只有一个t）</p>
+<p><img src="https://image.biacid.cn/image-20220214202543500.png" alt="image-20220214202543500" style="zoom:40%;" /></p>
+<h3 id="在线搜索算法"><a href="#在线搜索算法" class="headerlink" title="在线搜索算法"></a>在线搜索算法</h3><p>本文拓展了A*算法，传统的A*算法是去找权值最短的结点，本文是去找热门度最高的结点，算法流程如下：</p>
+<p><img src="https://image.biacid.cn/image-20220215104552446.png" alt="image-20220215104552446" style="zoom:40%;" /> </p>
+<h3 id="剪枝策略"><a href="#剪枝策略" class="headerlink" title="剪枝策略"></a>剪枝策略</h3><h4 id="利用时间限制进行剪枝"><a href="#利用时间限制进行剪枝" class="headerlink" title="利用时间限制进行剪枝"></a>利用时间限制进行剪枝</h4><p>考虑到时间限制的因素，假定扩展到顶点u，这时再顶点u已经超过了限制时间，则该结点被剪枝。对于启发式函数h(x)来说，边同样可以用类似的方法进行剪枝。</p>
+<p><img src="https://image.biacid.cn/image-20220215103542759.png" alt="image-20220215103542759" style="zoom:40%;" /></p>
+<h4 id="热度函数过滤"><a href="#热度函数过滤" class="headerlink" title="热度函数过滤"></a>热度函数过滤</h4><p>对于边$e_{ij}$，每条边都有一个最早到达时间和最晚到达时间，即不早于一个时间段到i，不晚于一个时间段离开j（这里为什么不设置每个点都有一个最早到达时间和最晚到达时间：h(x)统计的是边的权重）</p>
+<p><img src="https://image.biacid.cn/image-20220215102745583.png" alt="image-20220215102745583" style="zoom:40%;" /></p>
+<p><strong>疑问：</strong></p>
+<p>1、需要用户输入时间限制信息，会给用户带来一定的麻烦</p>
+<p>2、没有考虑到终点的影响，只是单纯的统计一段时间内轨迹经过的数量，这样对于一些终点会受到误判</p>
+<p>3、对于上图第三行FT的时间复杂度的计算感觉不清楚</p>
+<p><strong>可借鉴的地方：</strong></p>
+<p>1、划分时间的方式</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/13/TPMFP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2022/02/13/TPMFP/" itemprop="url">热门路径论文总结</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-13T20:05:07+08:00">
+                2022-02-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
+<p>本文定义了一个基于时间段的最频繁路径查询，即：</p>
+<p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p>
+<h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p>
+<p>2、高效搜索$(TPMFP)$</p>
+<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2022/02/13/TPMFP/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/10/MPR/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -309,135 +585,6 @@
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2022/02/10/MPR/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://too2.github.io/2022/02/10/TPMFP/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2022/02/10/TPMFP/" itemprop="url">热门路径论文总结</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2022-02-10T20:05:07+08:00">
-                2022-02-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p>
-<p>本文定义了一个基于时间段的最频繁路径查询，即：</p>
-<p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p>
-<h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p>
-<p>2、高效搜索$(TPMFP)$</p>
-<h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2022/02/10/TPMFP/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -645,7 +792,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">4</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -658,7 +805,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

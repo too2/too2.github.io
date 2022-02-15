@@ -6,7 +6,7 @@
   <link href="https://too2.github.io/atom.xml" rel="self"/>
   
   <link href="https://too2.github.io/"/>
-  <updated>2022-02-13T08:05:27.148Z</updated>
+  <updated>2022-02-15T02:46:38.718Z</updated>
   <id>https://too2.github.io/</id>
   
   <author>
@@ -15,6 +15,52 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>论文笔记3</title>
+    <link href="https://too2.github.io/2022/02/14/TDHP/"/>
+    <id>https://too2.github.io/2022/02/14/TDHP/</id>
+    <published>2022-02-14T12:05:07.000Z</published>
+    <updated>2022-02-15T02:46:38.718Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="本文问题定义"><a href="#本文问题定义" class="headerlink" title="本文问题定义"></a>本文问题定义</h3><p>本文定义问题如下：给定起点、终点，出发时间和一个旅行时间限制，本文的任务是在旅行时间限制内获得一个热门度很高的路线。</p><h3 id="本文主要想法"><a href="#本文主要想法" class="headerlink" title="本文主要想法"></a>本文主要想法</h3><p>发现热门路径是非常重要的，同时热门路径会随着时间变化而发生变化的。先前有关搜索热门路线的工作没有考虑到路线的热门度会随着时间变化而变化（其实13年sigmod论文已经考虑到了时间的影响，用户需要输入一个时间段，通过这个时间段在线构建footmark图，因此在线的时间开销较大，同时时间段设置的很大）</p><h3 id="本文贡献："><a href="#本文贡献：" class="headerlink" title="本文贡献："></a>本文贡献：</h3><ul><li>定义一个TDHP问题去找到具有时间依赖和旅行时间限制的热门路径</li><li>提出了一个构造热门度函数的方法</li><li>提出了一个新的搜索策略去找到TDHP，并使用优化的方法加速这个过程</li><li>实验评估effectiveness and efficiency</li></ul><h3 id="热门度函数定义"><a href="#热门度函数定义" class="headerlink" title="热门度函数定义"></a>热门度函数定义</h3><p>在这篇文章当中，为了减少计算边的热度所带来的开销，提出了一个TimeParti算法将连续热度函数进行离散化。</p><p>时间戳集合：</p><p><img src="https://image.biacid.cn/image-20220214200736892.png" alt="image-20220214200736892" style="zoom:40%;" /></p><p>假定时间被划分为$[t_{k},t_{k+1})|1 \leq k &lt; n$，那么边在该时段的热门度定义如上（这里感觉不太合理，原文说是timestamp set, 但这里$|t_{s_{t_k,t_{k+1}}}|$记录的应该是在$[t_{k},t_{k+1})|$中所有经过的轨迹数量而不是轨迹到达时间t的集合，如果很多轨迹都在同一时刻达到，但是只记录了时间戳，那么热门度就相应的会下降）</p><p>时间区间离散化：rhis</p><p><img src="https://image.biacid.cn/image-20220214202248869.png" alt="image-20220214202248869" style="zoom:40%;" /></p><p>这里采用的方法是二分K-means，设定一个阈值，判断每一个SSE是否会超过阈值，下图为划分示意图（这里若多条轨迹都在时刻t到达，应该认为只有一个t）</p><p><img src="https://image.biacid.cn/image-20220214202543500.png" alt="image-20220214202543500" style="zoom:40%;" /></p><h3 id="在线搜索算法"><a href="#在线搜索算法" class="headerlink" title="在线搜索算法"></a>在线搜索算法</h3><p>本文拓展了A*算法，传统的A*算法是去找权值最短的结点，本文是去找热门度最高的结点，算法流程如下：</p><p><img src="https://image.biacid.cn/image-20220215104552446.png" alt="image-20220215104552446" style="zoom:40%;" /> </p><h3 id="剪枝策略"><a href="#剪枝策略" class="headerlink" title="剪枝策略"></a>剪枝策略</h3><h4 id="利用时间限制进行剪枝"><a href="#利用时间限制进行剪枝" class="headerlink" title="利用时间限制进行剪枝"></a>利用时间限制进行剪枝</h4><p>考虑到时间限制的因素，假定扩展到顶点u，这时再顶点u已经超过了限制时间，则该结点被剪枝。对于启发式函数h(x)来说，边同样可以用类似的方法进行剪枝。</p><p><img src="https://image.biacid.cn/image-20220215103542759.png" alt="image-20220215103542759" style="zoom:40%;" /></p><h4 id="热度函数过滤"><a href="#热度函数过滤" class="headerlink" title="热度函数过滤"></a>热度函数过滤</h4><p>对于边$e_{ij}$，每条边都有一个最早到达时间和最晚到达时间，即不早于一个时间段到i，不晚于一个时间段离开j（这里为什么不设置每个点都有一个最早到达时间和最晚到达时间：h(x)统计的是边的权重）</p><p><img src="https://image.biacid.cn/image-20220215102745583.png" alt="image-20220215102745583" style="zoom:40%;" /></p><p><strong>疑问：</strong></p><p>1、需要用户输入时间限制信息，会给用户带来一定的麻烦</p><p>2、没有考虑到终点的影响，只是单纯的统计一段时间内轨迹经过的数量，这样对于一些终点会受到误判</p><p>3、对于上图第三行FT的时间复杂度的计算感觉不清楚</p><p><strong>可借鉴的地方：</strong></p><p>1、划分时间的方式</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;本文问题定义&quot;&gt;&lt;a href=&quot;#本文问题定义&quot; class=&quot;headerlink&quot; title=&quot;本文问题定义&quot;&gt;&lt;/a&gt;本文问题定义&lt;/h3&gt;&lt;p&gt;本文定义问题如下：给定起点、终点，出发时间和一个旅行时间限制，本文的任务是在旅行时间限制内获得一个热门度很高</summary>
+      
+    
+    
+    
+    
+    <category term="热门路径论文总结" scheme="https://too2.github.io/tags/%E7%83%AD%E9%97%A8%E8%B7%AF%E5%BE%84%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>热门路径论文总结</title>
+    <link href="https://too2.github.io/2022/02/13/TPMFP/"/>
+    <id>https://too2.github.io/2022/02/13/TPMFP/</id>
+    <published>2022-02-13T12:05:07.000Z</published>
+    <updated>2022-02-14T11:55:30.788Z</updated>
+    
+    <content type="html"><![CDATA[<p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p><p>本文定义了一个基于时间段的最频繁路径查询，即：</p><p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p><h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p><p>2、高效搜索$(TPMFP)$</p><h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？<span id="more"></span></p><p>1、首先简单的统计每条路段上通过的轨迹（轨迹经过终点）数目不能很好地反映一条路线的热门度 原因：考虑图1，从$v_1～v_{12}$的最热门路线，只单纯考虑从起点到终点经过的轨迹数目，那么$v_1-v_2-v_{12}$为最热门路线，但是对于$v_2～v_{12}$来说，最热门路线应当为$v_2-v_3-v_{12}$</p><p>2、 其他的一些方法通过对节点或者边赋予一个权重，通过聚合函数（相加/累积）求得边的频繁度，但是这种方法仍然存在一定的问题，如果是将不同边上的权重进行相加，那么最热门路径会更偏向于路段数更多的路线，对于先前11年的论文（利用转移概率的方法找到最热门的路径）会更倾向于路段数更少的路线。</p><p>因此为了定义一个更合理的热门度，本文定义的热门路线需满足三个条件</p><ul><li><p>后缀优先：任何最热门路径的后缀仍然是最热门路径</p></li><li><p>长度敏感：长度不敏感，$MFP$不偏向于更短或者更长的路径</p></li><li><p>没有瓶颈：不包含任何不频繁的边</p></li></ul><h3 id="高效搜索TPMFP"><a href="#高效搜索TPMFP" class="headerlink" title="高效搜索TPMFP"></a>高效搜索TPMFP</h3><p>同时由于历史轨迹数据非常庞大，并且本文是用户指定时间段，因为不可能将所有时间段的TPMFP结果都计算保存起来，所以在线计算的开销是不可避免的，为了使得TPMFP的查询更加高效，本文设计了特殊的索引结构（减少了从磁盘中获取的轨迹数量）。</p><p>本文的基本想法是通过序列值代替之前的标量值来去表示一条路线。首先给的终点和时间段，首先构造了一个带权重的路网子图$(footmark)$，在$footmark$中，每条边的权重被定义为经过这条边的轨迹（轨迹经过终点呢）数目。</p><p>$TPMFP$算法总流程：</p><p><img src="https://image.biacid.cn/image-20220213140857907.png" alt="image-20220213140857907" style="zoom:50%;" /></p><p>为了构造$footmark$图，首先需要将每条轨迹从磁盘中读出，之后判断其是否能形成$footmark$图，这样时间复杂度就为$O(|\widetilde Υ| \times l)$，即$footmark$的个数乘上$footmarks$的平均长度。</p><p>为了减少$I/O$磁盘消耗，本文设计了$FMI$高效的过滤掉了那些不包含$footmarks$的轨迹（用索引进行查询优化），进一步的通过获取支配轨迹来减少随机页的访问。</p><p><img src="https://image.biacid.cn/image-20220213142010432.png" alt="image-20220213142010432" style="zoom:50%;" /></p><p><img src="https://image.biacid.cn/image-20220213142321631.png" alt="image-20220213142321631" style="zoom:50%;" /></p><p>对于FMI，首先针对$footmarks$图上的每一个节点$v_i$构造了一棵B+树，B+树的每一个叶子结点的格式为$<tid, t_a>$，$tid$代表轨迹的$id$，$t_a$代表轨迹到达$v_i$的时间。通过构建$FMI$，可将搜索$(v_d, T)$的时间缩短至$O(log(|Υ_{v_d}|+|Υ_({v_d,_T})|))$。这时算法瓶颈就出现在将轨迹从磁盘中读出的时间开销（代码中的第四行），会导致$|Υ_({v_d,_T})|$的页面访问，为了进一步去除这种随机读写，开发了$CFMI$的索引结构，这里首先定义了支配轨迹的概念，即轨迹集合中没有任何轨迹能够包含该轨迹（除该轨迹本身），考虑到支配轨迹包含了其余的轨迹，那么只需要记录支配轨迹，并记录下被支配轨迹在支配轨迹的起始位置，这样就不用再去访问其他轨迹了。</p><p><img src="https://image.biacid.cn/image-20220213142654800.png" alt="image-20220213142654800" style="zoom:50%;" /></p><p><img src="https://image.biacid.cn/image-20220213142754398.png" alt="image-20220213142754398" style="zoom:50%;" /></p><p>这里使用支配轨迹主要有两个原因，第一个原因是支配轨迹的数量远远小于所有的轨迹数量，如果我们能够只去访问支配轨迹就能有效的减少页面随机访问的次数；第二，本文设定的时间段T，一般远大于轨迹从起点到终点的时间，这意味着大多数轨迹的开始时间都在时间段$T$内（这段话不是很懂）。$CFMI$改进了在FMI中的索引结构，B+树中叶子结点的关键字格式变为$<tid,t_s,t_a,did,sloc>$，分别代表轨迹$id$，轨迹开始时间，轨迹到终点的时间，支配该轨迹的轨迹$id$和在被支配轨迹$id$中的位置。</p><p>最后，由于$footmarks$上路线序列非递减的特性，可使用$dp$快速找到$TPMFP$。在线规划部分使用类似$bell-fold$的方法找到$TPMFP$。</p><p>可以借鉴的地方：</p><p>可以借鉴其设计$CFMI$索引结构获取轨迹数据来减少磁盘$I/O$开销的问题</p><p>疑问：</p><p>这里热门路线定义为什么是非单调递减？任何最热门路径的后缀仍然是最热门路径？</p>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;strong&gt;Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;本文定义了一个基于时间段的最频繁路径查询，即：&lt;/p&gt;
+&lt;p&gt;用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$&lt;/p&gt;
+&lt;h3 id=&quot;本文主要工作：&quot;&gt;&lt;a href=&quot;#本文主要工作：&quot; class=&quot;headerlink&quot; title=&quot;本文主要工作：&quot;&gt;&lt;/a&gt;本文主要工作：&lt;/h3&gt;&lt;p&gt;1、热门度定义&lt;/p&gt;
+&lt;p&gt;2、高效搜索$(TPMFP)$&lt;/p&gt;
+&lt;h3 id=&quot;热门度定义&quot;&gt;&lt;a href=&quot;#热门度定义&quot; class=&quot;headerlink&quot; title=&quot;热门度定义&quot;&gt;&lt;/a&gt;热门度定义&lt;/h3&gt;&lt;p&gt;如何很好的对热门度进行量化呢？</summary>
+    
+    
+    
+    
+    <category term="论文笔记2" scheme="https://too2.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B02/"/>
+    
+  </entry>
   
   <entry>
     <title>热门路径论文总结</title>
@@ -34,30 +80,6 @@
     
     
     <category term="论文笔记" scheme="https://too2.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B0/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>热门路径论文总结</title>
-    <link href="https://too2.github.io/2022/02/10/TPMFP/"/>
-    <id>https://too2.github.io/2022/02/10/TPMFP/</id>
-    <published>2022-02-10T12:05:07.000Z</published>
-    <updated>2022-02-13T08:18:04.590Z</updated>
-    
-    <content type="html"><![CDATA[<p><strong>Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013</strong></p><p>本文定义了一个基于时间段的最频繁路径查询，即：</p><p>用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$</p><h3 id="本文主要工作："><a href="#本文主要工作：" class="headerlink" title="本文主要工作："></a>本文主要工作：</h3><p>1、热门度定义</p><p>2、高效搜索$(TPMFP)$</p><h3 id="热门度定义"><a href="#热门度定义" class="headerlink" title="热门度定义"></a>热门度定义</h3><p>如何很好的对热门度进行量化呢？<span id="more"></span></p><p>1、首先简单的统计每条路段上通过的轨迹（轨迹经过终点）数目不能很好地反映一条路线的热门度 原因：考虑图1，从$v_1～v_{12}$的最热门路线，只单纯考虑从起点到终点经过的轨迹数目，那么$v_1-v_2-v_{12}$为最热门路线，但是对于$v_2～v_{12}$来说，最热门路线应当为$v_2-v_3-v_{12}$</p><p>2、 其他的一些方法通过对节点或者边赋予一个权重，通过聚合函数（相加/累积）求得边的频繁度，但是这种方法仍然存在一定的问题，如果是将不同边上的权重进行相加，那么最热门路径会更偏向于路段数更多的路线，对于先前11年的论文（利用转移概率的方法找到最热门的路径）会更倾向于路段数更少的路线。</p><p>因此为了定义一个更合理的热门度，本文定义的热门路线需满足三个条件</p><ul><li><p>后缀优先：任何最热门路径的后缀仍然是最热门路径</p></li><li><p>长度敏感：长度不敏感，$MFP$不偏向于更短或者更长的路径</p></li><li><p>没有瓶颈：不包含任何不频繁的边</p></li></ul><h3 id="高效搜索TPMFP"><a href="#高效搜索TPMFP" class="headerlink" title="高效搜索TPMFP"></a>高效搜索TPMFP</h3><p>同时由于历史轨迹数据非常庞大，并且本文是用户指定时间段，因为不可能将所有时间段的TPMFP结果都计算保存起来，所以在线计算的开销是不可避免的，为了使得TPMFP的查询更加高效，本文设计了特殊的索引结构（减少了从磁盘中获取的轨迹数量）。</p><p>本文的基本想法是通过序列值代替之前的标量值来去表示一条路线。首先给的终点和时间段，首先构造了一个带权重的路网子图$(footmark)$，在$footmark$中，每条边的权重被定义为经过这条边的轨迹（轨迹经过终点呢）数目。</p><p>$TPMFP$算法总流程：</p><p><img src="https://image.biacid.cn/image-20220213140857907.png" alt="image-20220213140857907" style="zoom:50%;" /></p><p>为了构造$footmark$图，首先需要将每条轨迹从磁盘中读出，之后判断其是否能形成$footmark$图，这样时间复杂度就为$O(|\widetilde Υ| \times l)$，即$footmark$的个数乘上$footmarks$的平均长度。</p><p>为了减少$I/O$磁盘消耗，本文设计了$FMI$高效的过滤掉了那些不包含$footmarks$的轨迹（用索引进行查询优化），进一步的通过获取支配轨迹来减少随机页的访问。</p><p><img src="https://image.biacid.cn/image-20220213142010432.png" alt="image-20220213142010432" style="zoom:50%;" /></p><p><img src="https://image.biacid.cn/image-20220213142321631.png" alt="image-20220213142321631" style="zoom:50%;" /></p><p>对于FMI，首先针对$footmarks$图上的每一个节点$v_i$构造了一棵B+树，B+树的每一个叶子结点的格式为$<tid, t_a>$，$tid$代表轨迹的$id$，$t_a$代表轨迹到达$v_i$的时间。通过构建$FMI$，可将搜索$(v_d, T)$的时间缩短至$O(log(|Υ_{v_d}|+|Υ_({v_d,_T})|))$。这时算法瓶颈就出现在将轨迹从磁盘中读出的时间开销（代码中的第四行），会导致$|Υ_({v_d,_T})|$的页面访问，为了进一步去除这种随机读写，开发了$CFMI$的索引结构，这里首先定义了支配轨迹的概念，即轨迹集合中没有任何轨迹能够包含该轨迹（除该轨迹本身），考虑到支配轨迹包含了其余的轨迹，那么只需要记录支配轨迹，并记录下被支配轨迹在支配轨迹的起始位置，这样就不用再去访问其他轨迹了。</p><p><img src="https://image.biacid.cn/image-20220213142654800.png" alt="image-20220213142654800" style="zoom:50%;" /></p><p><img src="https://image.biacid.cn/image-20220213142754398.png" alt="image-20220213142754398" style="zoom:50%;" /></p><p>这里使用支配轨迹主要有两个原因，第一个原因是支配轨迹的数量远远小于所有的轨迹数量，如果我们能够只去访问支配轨迹就能有效的减少页面随机访问的次数；第二，本文设定的时间段T，一般远大于轨迹从起点到终点的时间，这意味着大多数轨迹的开始时间都在时间段$T$内（这段话不是很懂）。$CFMI$改进了在FMI中的索引结构，B+树中叶子结点的关键字格式变为$<tid,t_s,t_a,did,sloc>$，分别代表轨迹$id$，轨迹开始时间，轨迹到终点的时间，支配该轨迹的轨迹$id$和在被支配轨迹$id$中的位置。</p><p>最后，由于$footmarks$上路线序列非递减的特性，可使用$dp$快速找到$TPMFP$。在线规划部分使用类似$bell-fold$的方法找到$TPMFP$。</p><p>可以借鉴的地方：</p><p>可以借鉴其设计$CFMI$索引结构获取轨迹数据来减少磁盘$I/O$开销的问题</p><p>疑问：</p><p>这里热门路线定义为什么是非单调递减？任何最热门路径的后缀仍然是最热门路径？</p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;&lt;strong&gt;Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;本文定义了一个基于时间段的最频繁路径查询，即：&lt;/p&gt;
-&lt;p&gt;用户给定一个时间段，起点和终点，返回一个最热门的路线$(TPMFP)$&lt;/p&gt;
-&lt;h3 id=&quot;本文主要工作：&quot;&gt;&lt;a href=&quot;#本文主要工作：&quot; class=&quot;headerlink&quot; title=&quot;本文主要工作：&quot;&gt;&lt;/a&gt;本文主要工作：&lt;/h3&gt;&lt;p&gt;1、热门度定义&lt;/p&gt;
-&lt;p&gt;2、高效搜索$(TPMFP)$&lt;/p&gt;
-&lt;h3 id=&quot;热门度定义&quot;&gt;&lt;a href=&quot;#热门度定义&quot; class=&quot;headerlink&quot; title=&quot;热门度定义&quot;&gt;&lt;/a&gt;热门度定义&lt;/h3&gt;&lt;p&gt;如何很好的对热门度进行量化呢？</summary>
-    
-    
-    
-    
-    <category term="论文笔记2" scheme="https://too2.github.io/tags/%E8%AE%BA%E6%96%87%E7%AC%94%E8%AE%B02/"/>
     
   </entry>
   
