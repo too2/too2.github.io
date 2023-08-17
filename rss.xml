@@ -131,6 +131,55 @@
  ]]></description>
         </item>
         <item>
+            <guid isPermalink="true">http://example.com/computer-science/paper-read/next_poi_predict/DeepMove/</guid>
+            <title>DeepMove</title>
+            <link>http://example.com/computer-science/paper-read/next_poi_predict/DeepMove/</link>
+            <category term="计算机科学" scheme="http://example.com/categories/computer-science/" />
+            <category term="论文阅读" scheme="http://example.com/categories/computer-science/paper-reading/" />
+            <category term="下一个POI推荐" scheme="http://example.com/categories/computer-science/paper-reading/next-poi-predict/" />
+            <category term="下一个POI推荐" scheme="http://example.com/tags/%E4%B8%8B%E4%B8%80%E4%B8%AAPOI%E6%8E%A8%E8%8D%90/" />
+            <pubDate>Sun, 19 Feb 2023 23:14:00 +0800</pubDate>
+            <description><![CDATA[ &lt;h3 id=&#34;1-研究问题与挑战&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#1-研究问题与挑战&#34;&gt;#&lt;/a&gt; 1、研究问题与挑战&lt;/h3&gt;
+&lt;p&gt;解决问题：人类移动模式预测&lt;/p&gt;
+&lt;p&gt;idea：利用注意力机制和循环网络可以从长范围和稀疏的轨迹数据中预测人类的移动规律&lt;/p&gt;
+&lt;p&gt;面临挑战：①复杂的序列转移模式，包括时间依赖（不同出发时间对于转移模式的影响），人类的转移模式并不遵循简单的马尔可夫假设，而是具有高阶规律（比如人们可以在他们的通勤路线中去不同的地方（例如早餐地点））②移动模式具有多层次规律，人类移动模式具有多层次周期性规律，包括每日例程，节假日例程&lt;/p&gt;
+&lt;h3 id=&#34;2-先前方法不足&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#2-先前方法不足&#34;&gt;#&lt;/a&gt; 2、先前方法不足&lt;/h3&gt;
+&lt;p&gt;早期的基于模式的移动性预测方法不仅受到预定义模式的片面性的影响，而且忽略了对移动性预测至关重要的个人偏好。最近的一些基于模型的方法利用序列统计模型（例如马尔可夫链或递归神经网络）来捕捉人类运动的过渡规律，但是这种方式仍存在几个问题：①无法很好的捕捉复杂的序列规律； ②无法捕捉人类轨迹呈现出的多层次周期性； ③无法很好地处理人类移动数据中的异质性和稀疏性；&lt;/p&gt;
+&lt;h3 id=&#34;3-本文解决方案&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#3-本文解决方案&#34;&gt;#&lt;/a&gt; 3、本文解决方案&lt;/h3&gt;
+&lt;p&gt;本文设计了一个多模态嵌入模块，该模块将稀疏特征（例如，一天中的时间、区域、用户）转换为密集表示，然后将其输入递归神经网络，以对轨迹序列中的长程和复杂依赖性进行建模。此外设计了一个历史注意力模块，用来选择与当前预测时间戳高度相关的历史记录，灵活地利用周期性运动规律来增强递归神经网络并提高预测精度，同时学习到的注意力权重为理解预测过程中强调哪些历史活动提供了一种容易解释的方式。该模型利用用户向量表征捕获个性化，RNN 捕捉序列转移关系，历史注意力模块捕获周期性，分别对应先前方法不能解决的问题 3、1、2&lt;/p&gt;
+&lt;h3 id=&#34;4-方法介绍&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#4-方法介绍&#34;&gt;#&lt;/a&gt; 4、方法介绍&lt;/h3&gt;
+&lt;p&gt;该模型框架如图 1 所示，包含三个部分：特征提取和嵌入；循环模块和历史注意力机制；预测模块&lt;/p&gt;
+&lt;p&gt;①　特征提取和嵌入部分&lt;/p&gt;
+&lt;p&gt;​	将轨迹分为两个部分，历史轨迹和当前轨迹，将位置、时间和用户 ID 这些信息 one-hot 后送入 embedding 层&lt;/p&gt;
+&lt;p&gt;②　循环模块和历史注意力机制&lt;/p&gt;
+&lt;p&gt;​	当前轨迹送入 GRU 层学习序列关系，历史轨迹送入历史注意力模块中学习周期性，GRU 最后的输出作为历史注意力模块的 query。历史注意力选择模块包括一个候选位置生成器和一个注意力选择器，嵌入模块首先将尺寸调节层，将历史轨迹变为时间维度长度固定，空间维度不定的历史轨迹矩阵，之后送入采样层，再通过一层全连接层调整向量维度，之后将该部分再送入 GRU 中，生成的候选位置向量就作为候选轨迹表征向量&lt;/p&gt;
+&lt;p&gt;③　预测模块，将循环模块和历史注意力机制模块的输出进行拼接，送到全连接层中，最后经过有负采样的 softmax 层&lt;/p&gt;
+&lt;p&gt;&lt;img data-src=&#34;https://image.biacid.cn/wps1.jpg&#34; alt=&#34;&#34; height=&#34;400px&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;图 1 DeepMove 框架图&lt;/p&gt;
+&lt;h3 id=&#34;5-实验设计与结果&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#5-实验设计与结果&#34;&gt;#&lt;/a&gt; 5、实验设计与结果&lt;/h3&gt;
+&lt;p&gt;(1) 实验数据集介绍&lt;/p&gt;
+&lt;p&gt;本文共使用三个数据集，分别网络基站数据集、移动应用数据集和 Foursquare 签到数据集&lt;/p&gt;
+&lt;p&gt;针对不同数据的处理方式：&lt;/p&gt;
+&lt;p&gt;Foursquare 签到数据集&lt;/p&gt;
+&lt;p&gt;- 数据稀疏，平均每个用户一年有 18 个位置访问记录&lt;/p&gt;
+&lt;p&gt;- 过滤用户签到数少于 10 个的用户记录，并将用户签到数据按照时间间隔划分成会话，进一步过滤掉会话中签到记录少于 5 个的会话和会话数少于 5 个的用户，选择 72 小时作为默认的时间间隔&lt;/p&gt;
+&lt;p&gt;网络基站数据集、移动应用数据集&lt;/p&gt;
+&lt;p&gt;- 数据相对稠密&lt;/p&gt;
+&lt;p&gt;- 将一天划分为 48 个时间段，并将同一时间段的会话聚合为一条记录&lt;/p&gt;
+&lt;p&gt;(2) 对比方法&lt;/p&gt;
+&lt;p&gt;- 马尔可夫模型，构造一阶转移矩阵&lt;/p&gt;
+&lt;p&gt;- PMM&lt;/p&gt;
+&lt;p&gt;- RNN-based ST- RNN&lt;/p&gt;
+&lt;p&gt;在 top-1 和 top-5 评价指标上，本文提出的方法均优于其他 baseline&lt;/p&gt;
+&lt;p&gt;(3) 消融实验&lt;/p&gt;
+&lt;p&gt;- 提出的两个注意力机制效果比较&lt;/p&gt;
+&lt;p&gt;- 不同采样策略效果比较&lt;/p&gt;
+&lt;p&gt;- 加入用户 ID 效果比较&lt;/p&gt;
+&lt;p&gt;(4) 对不同的用户组进行了分析&lt;/p&gt;
+&lt;p&gt;- 分别按照移动熵、探索率和活动半径对用户进行了分组，更好的验证模型预测不同类型用户的移动规律的准确率&lt;/p&gt;
+ ]]></description>
+        </item>
+        <item>
             <guid isPermalink="true">http://example.com/computer-science/paper-read/route-planning/TDHP/</guid>
             <title>论文阅读-Finding Time-Dependent Hot Path from GPS Trajectories</title>
             <link>http://example.com/computer-science/paper-read/route-planning/TDHP/</link>
@@ -187,7 +236,7 @@
             <category term="路径规划" scheme="http://example.com/categories/computer-science/paper-reading/route-planning/" />
             <category term="热门路径论文总结" scheme="http://example.com/tags/%E7%83%AD%E9%97%A8%E8%B7%AF%E5%BE%84%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93/" />
             <pubDate>Sun, 13 Feb 2022 20:05:07 +0800</pubDate>
-            <description><![CDATA[ &lt;p&gt;&lt;strong&gt;Finding Time Period-Based Most Frequent Path in Big Trajectory Data.     SIGMOD 2013&lt;/strong&gt;&lt;/p&gt;
+            <description><![CDATA[ &lt;p&gt;&lt;strong&gt;Finding Time Period-Based Most Frequent Path in Big Trajectory Data.  SIGMOD 2013&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;本文定义了一个基于时间段的最频繁路径查询，即：&lt;/p&gt;
 &lt;p&gt;用户给定一个时间段，起点和终点，返回一个最热门的路线&lt;span class=&#34;katex&#34;&gt;&lt;span class=&#34;katex-mathml&#34;&gt;&lt;math xmlns=&#34;http://www.w3.org/1998/Math/MathML&#34;&gt;&lt;semantics&gt;&lt;mrow&gt;&lt;mo stretchy=&#34;false&#34;&gt;(&lt;/mo&gt;&lt;mi&gt;T&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;mi&gt;M&lt;/mi&gt;&lt;mi&gt;F&lt;/mi&gt;&lt;mi&gt;P&lt;/mi&gt;&lt;mo stretchy=&#34;false&#34;&gt;)&lt;/mo&gt;&lt;/mrow&gt;&lt;annotation encoding=&#34;application/x-tex&#34;&gt;(TPMFP)&lt;/annotation&gt;&lt;/semantics&gt;&lt;/math&gt;&lt;/span&gt;&lt;span class=&#34;katex-html&#34; aria-hidden=&#34;true&#34;&gt;&lt;span class=&#34;base&#34;&gt;&lt;span class=&#34;strut&#34; style=&#34;height:1em;vertical-align:-0.25em;&#34;&gt;&lt;/span&gt;&lt;span class=&#34;mopen&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mord mathnormal&#34; style=&#34;margin-right:0.13889em;&#34;&gt;T&lt;/span&gt;&lt;span class=&#34;mord mathnormal&#34; style=&#34;margin-right:0.13889em;&#34;&gt;P&lt;/span&gt;&lt;span class=&#34;mord mathnormal&#34; style=&#34;margin-right:0.10903em;&#34;&gt;M&lt;/span&gt;&lt;span class=&#34;mord mathnormal&#34; style=&#34;margin-right:0.13889em;&#34;&gt;F&lt;/span&gt;&lt;span class=&#34;mord mathnormal&#34; style=&#34;margin-right:0.13889em;&#34;&gt;P&lt;/span&gt;&lt;span class=&#34;mclose&#34;&gt;)&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;
 &lt;h3 id=&#34;本文主要工作&#34;&gt;&lt;a class=&#34;anchor&#34; href=&#34;#本文主要工作&#34;&gt;#&lt;/a&gt; 本文主要工作：&lt;/h3&gt;
@@ -277,6 +326,17 @@
 &lt;p&gt;疑问：&lt;/p&gt;
 &lt;p&gt;1、为什么要计算 t 次，文中给出的解释是只计算一次只考虑了局部的信息，考虑 t 次能够考虑全局的信息&lt;/p&gt;
 &lt;p&gt;2、发现矩阵快速幂的方法可以优化 224 行，矩阵相乘可以用 Matlab 来优化&lt;/p&gt;
+ ]]></description>
+        </item>
+        <item>
+            <guid isPermalink="true">http://example.com/innovation-project/%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82%E5%9E%83%E5%9C%BE%E6%A1%B6/</guid>
+            <title>AIoT智慧分类垃圾桶</title>
+            <link>http://example.com/innovation-project/%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82%E5%9E%83%E5%9C%BE%E6%A1%B6/</link>
+            <category term="大创" scheme="http://example.com/categories/innovation-project/" />
+            <category term="大创" scheme="http://example.com/tags/%E5%A4%A7%E5%88%9B/" />
+            <pubDate>Wed, 05 Aug 2020 20:04:00 +0800</pubDate>
+            <description><![CDATA[ &lt;p&gt;&lt;strong&gt;简介：大二下学期和四名同年级的本科生组成了大创小组，独立研制了一款基于 AIoT 的智能分类垃圾桶&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&amp;lt;iframe src=&amp;quot;&lt;a href=&#34;//player.bilibili.com/player.html?aid=317361543&amp;amp;bvid=BV18P411s75b&amp;amp;cid=1236511292&amp;amp;page=1&#34;&gt;//player.bilibili.com/player.html?aid=317361543&amp;amp;bvid=BV18P411s75b&amp;amp;cid=1236511292&amp;amp;page=1&lt;/a&gt;&amp;quot; scrolling=&amp;quot;no&amp;quot; border=&amp;quot;0&amp;quot; frameborder=&amp;quot;no&amp;quot; framespacing=&amp;quot;0&amp;quot; allowfullscreen=&amp;quot;true&amp;quot; width=&amp;quot;700px&amp;quot; height=&amp;quot;472px&amp;quot;&amp;gt; &amp;lt;/iframe&amp;gt;&lt;/p&gt;
  ]]></description>
         </item>
     </channel>
